@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronoForge · 天时 · Chinese Lunisolar Calendar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="compact-mode">
+
+  <!-- MAIN HEADER -->
+  <header class="main-header">
+    <div class="header-top">
+      <h1>ChronoForge <span class="subhead">· 天时</span></h1>
+      <div class="dynasty-badge" id="cycleBadge">—</div>
+    </div>
+    
+    <!-- Navigation Bar -->
+    <div class="header-nav">
+      <button class="nav-arrow" id="prevYear" title="Previous Year">◀◀</button>
+      <button class="nav-arrow" id="prevMonth" title="Previous Month">◀</button>
+      
+      <div class="current-display">
+        <span class="gregorian-display" id="headerGregorian">—</span>
+        <span class="lunar-display" id="headerLunar">—</span>
+      </div>
+      
+      <button class="nav-arrow" id="nextMonth" title="Next Month">▶</button>
+      <button class="nav-arrow" id="nextYear" title="Next Year">▶▶</button>
+      
+      <button id="toggleToday" class="today-btn" title="Return to today">📅 今</button>
+      <button id="settingsToggle" class="settings-btn">⚙️</button>
+    </div>
+
+    <!-- Settings Menu -->
+    <div id="settingsMenu" class="settings-menu hidden">
+      <div class="setting-group">
+        <label for="detailLevel">Detail Level:</label>
+        <select id="detailLevel">
+          <option value="basic">Basic (月 · 日)</option>
+          <option value="standard" selected>Standard (+ 干支 · 节气)</option>
+          <option value="complete">Complete (+ 宜忌 · 时辰)</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label for="languagePreference">Language:</label>
+        <select id="languagePreference">
+          <option value="chinese">中文</option>
+          <option value="english">English</option>
+          <option value="bilingual" selected>中/EN (Bilingual)</option>
+        </select>
+      </div>
+      <div class="setting-group checkbox">
+        <input type="checkbox" id="showSolarTerms" checked>
+        <label for="showSolarTerms">Show 节气 (Solar Terms)</label>
+      </div>
+      <div class="setting-group checkbox">
+        <input type="checkbox" id="showZodiac" checked>
+        <label for="showZodiac">Show 生肖 (Zodiac)</label>
+      </div>
+      <div class="setting-group checkbox">
+        <input type="checkbox" id="showAuspicious">
+        <label for="showAuspicious">Show 宜忌 (Auspicious)</label>
+      </div>
+      <div class="setting-group checkbox">
+        <input type="checkbox" id="showPillars" checked>
+        <label for="showPillars">Show Four Pillars</label>
+      </div>
+      <div class="setting-group checkbox">
+        <input type="checkbox" id="compactMode" checked>
+        <label for="compactMode">Compact View</label>
+      </div>
+      <div class="setting-group checkbox">
+        <input type="checkbox" id="ultraCompact">
+        <label for="ultraCompact">Ultra Compact</label>
+      </div>
+    </div>
+  </header>
+
+  <!-- ERA BAR -->
+  <div class="era-bar">
+    <div class="era-item" id="yearPillar">—</div>
+    <div class="era-item" id="monthPillar">—</div>
+    <div class="era-item" id="solarTerm">—</div>
+    <div class="era-item" id="lunarLeapIndicator"></div>
+    <div class="era-item warning-badge" id="rangeWarning"></div>
+  </div>
+
+  <!-- MAIN CALENDAR -->
+  <main>
+    <!-- Month Metadata -->
+    <div class="month-metadata">
+      <div class="metadata-item">
+        <span class="metadata-label" id="lunarMonthLabel">农历月</span>
+        <span class="metadata-value" id="lunarMonthName">—</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-label" id="monthStemLabel">月干支</span>
+        <span class="metadata-value" id="monthStemBranch">—</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-label" id="monthDaysLabel">天数</span>
+        <span class="metadata-value" id="monthDays">—</span>
+      </div>
+      <div class="metadata-item">
+        <span class="metadata-label" id="monthTermsLabel">节气</span>
+        <span class="metadata-value" id="monthTerms">—</span>
+      </div>
+    </div>
+
+    <!-- Weekday Headers - 2 ROWS -->
+    <div class="weekdays-container">
+      <div class="weekdays chinese-weekdays" id="weekdaysRow1">
+        <span>日</span>
+        <span>一</span>
+        <span>二</span>
+        <span>三</span>
+        <span>四</span>
+        <span>五</span>
+        <span>六</span>
+      </div>
+      <div class="weekdays english-weekdays" id="weekdaysRow2">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+    </div>
+
+    <!-- Days Grid -->
+    <div id="daysContainer" class="days-grid"></div>
+
+    <!-- Leap Month Notice -->
+    <div id="leapNotice" class="leap-notice hidden"></div>
+  </main>
+
+  <!-- INFO PANEL -->
+  <aside class="info-panel" id="infoPanel">
+    <!-- Row 1: Gregorian + Lunar -->
+    <div class="info-row-group">
+      <div class="info-section">
+        <h3 id="gregorianTitle">公历 · Gregorian</h3>
+        <div class="info-item highlight">
+          <span class="info-label" id="dateLabel">日期</span>
+          <span id="infoGregorian">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label" id="weekdayLabel">星期</span>
+          <span id="infoWeekday">—</span>
+        </div>
+      </div>
+      
+      <div class="info-section">
+        <h3 id="lunarTitle">农历 · Lunar</h3>
+        <div class="info-item">
+          <span class="info-label" id="lunarMonthLabel2">月</span>
+          <span id="infoLunarMonth">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label" id="lunarDayLabel">日</span>
+          <span id="infoLunarDay">—</span>
+        </div>
+        <div class="info-item" id="leapInfoRow">
+          <span class="info-label" id="leapLabel">闰月</span>
+          <span id="infoIsLeap">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label" id="yearDaysLabel">全年天数</span>
+          <span id="infoYearDays">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Four Pillars -->
+    <div class="info-section" id="pillarsSection">
+      <h3 id="pillarsTitle">四柱 · Four Pillars</h3>
+      <div class="pillar-grid">
+        <div><span class="pillar-label" id="yearPillarLabel">年柱</span> <span id="pillarYear">—</span></div>
+        <div><span class="pillar-label" id="monthPillarLabel">月柱</span> <span id="pillarMonth">—</span></div>
+        <div><span class="pillar-label" id="dayPillarLabel">日柱</span> <span id="pillarDay">—</span></div>
+        <div><span class="pillar-label" id="hourPillarLabel">时柱*</span> <span id="pillarHour">—</span></div>
+      </div>
+      <div class="pillar-details" id="pillarDetails">
+        <span id="pillarYearElement">—</span> · 
+        <span id="pillarDayZodiac">—</span> · 
+        <span id="pillarYinYang">—</span>
+      </div>
+      <div class="info-note" id="hourNote">*时柱 approximated (子时)</div>
+    </div>
+
+    <!-- Row 3: Solar Terms -->
+    <div class="info-section" id="solarTermSection">
+      <h3 id="solarTermTitle">节气 · Solar Term</h3>
+      <div class="term-display">
+        <span id="currentTerm">—</span>
+        <span id="nextTerm">—</span>
+      </div>
+      <div class="term-progress-container">
+        <div class="term-progress" id="termProgress" style="width: 0%"></div>
+      </div>
+      <div class="term-dates" id="termDates"></div>
+    </div>
+
+    <!-- Row 4: Auspicious -->
+    <div class="info-section hidden" id="auspiciousSection">
+      <h3 id="auspiciousTitle">宜忌 · Auspicious</h3>
+      <div class="auspicious-grid">
+        <div class="auspicious-good">
+          <span class="aus-label" id="suitableLabel">宜</span>
+          <span id="suitable">—</span>
+        </div>
+        <div class="auspicious-bad">
+          <span class="aus-label" id="unsuitableLabel">忌</span>
+          <span id="unsuitable">—</span>
+        </div>
+      </div>
+      <div class="auspicious-direction" id="auspiciousDirection"></div>
+    </div>
+
+    <!-- Range Warning -->
+    <div class="info-section range-warning hidden" id="rangeWarningSection">
+      <p id="rangeWarningMessage"></p>
+    </div>
+
+    <div class="info-note" id="dataSourceNote">
+      📜 1900-2100 · 数据来源: 紫金山天文台 · 节气近似 ±1日
+    </div>
+  </aside>
+
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- SCRIPTS -->
+  <script src="script.js"></script>
+</body>
+</html>
